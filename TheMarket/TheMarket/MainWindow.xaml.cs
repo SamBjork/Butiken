@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Butiken
+namespace TheMarket
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -23,21 +23,6 @@ namespace Butiken
         public MainWindow()
         {
             InitializeComponent();
-            Start();
-        }
-        private void Start()
-        {
-            Title = "Butiken";
-            Width = 1000;
-            Height = 600;
-            WindowStartupLocation = WindowStartupLocation.CenterScreen;
-
-            ScrollViewer scroll = (ScrollViewer)Content;
-
-            Grid mainGrid = new Grid();
-            scroll.Content = mainGrid;
-            mainGrid.Margin = new Thickness(5);
-            mainGrid.RowDefinitions = new RowDefinition();
         }
     }
 }
