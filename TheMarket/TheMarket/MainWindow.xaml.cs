@@ -122,16 +122,24 @@ namespace TheMarket
                 TextAlignment = TextAlignment.Center
             };
             mainPanel1.Children.Add(productHeading);
-            
-            
+
+            Grid productGrid = new Grid
+            {
+                MinHeight = 300,
+                Margin = new Thickness(5)
+            };
+            mainPanel1.Children.Add(productGrid);
+            productGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            productGrid.RowDefinitions.Add(new RowDefinition());
+            productGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
             ListBox productBox = new ListBox { Margin = new Thickness(5) };
-            mainPanel1.Children.Add(productBox);
+            productGrid.Children.Add(productBox);
             productBox.Items.Add("Produkter");
             productBox.Items.Add("Produkter");
             productBox.Items.Add("Produkter");
-            Grid.SetColumn(productBox, 1);
-            Grid.SetRow(productBox, 1);
-            //lägga in funktionalitet, eventhandler
+            
+            
 
             TextBlock totalPrice = new TextBlock
             {
