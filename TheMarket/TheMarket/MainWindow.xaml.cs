@@ -114,7 +114,8 @@ namespace TheMarket
             Grid subGrid1 = new Grid ();
             subGrid1.ColumnDefinitions.Add(new ColumnDefinition());
             subGrid1.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            subGrid1.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            
+            subGrid1.RowDefinitions.Add(new RowDefinition());
             subGrid1.RowDefinitions.Add(new RowDefinition());
             subGrid1.RowDefinitions.Add(new RowDefinition());
             subGrid1.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -137,6 +138,7 @@ namespace TheMarket
             subGrid1.Children.Add(productBox);
             Grid.SetRow(productBox, 1);
             Grid.SetColumn(productBox, 0);
+            
 
             productBox.Items.Add("Produkter");
             productBox.Items.Add("Produkter");
@@ -144,14 +146,14 @@ namespace TheMarket
 
 
             // textbox som läser rabattkod från användaren
-            TextBox discountText = new TextBox
+            TextBox discountBox = new TextBox
             {
                 Text = "",
-                Margin = new Thickness(50, 10, 50, 10),
+                Margin = new Thickness(50, 20, 50, 20),
             };
-            subGrid1.Children.Add(discountText);
-            Grid.SetRow(discountText, 2);
-            Grid.SetColumn(discountText, 0);
+            subGrid1.Children.Add(discountBox);
+            Grid.SetRow(discountBox, 2);
+            Grid.SetColumn(discountBox, 0);
 
             Button applyCodeButton = new Button
             {
