@@ -55,10 +55,10 @@ namespace TheMarket
             Grid.SetRow(infoPanel, 0);
             Grid.SetColumn(infoPanel, 0);
             //gör om till grid oxå
-            StackPanel mainPanel1 = CreateMainPanel1();
-            mainGrid.Children.Add(mainPanel1);
-            Grid.SetRow(mainPanel1, 0);
-            Grid.SetColumn(mainPanel1, 1);
+            Grid SubGrid1 = CreateSubGrid1();
+            mainGrid.Children.Add(SubGrid1);
+            Grid.SetRow(SubGrid1, 0);
+            Grid.SetColumn(SubGrid1, 1);
 
             Grid subGrid2 = CreateMainGrid2();
             mainGrid.Children.Add(subGrid2);
@@ -109,10 +109,18 @@ namespace TheMarket
 
             return infoPanel;
         }
-        private StackPanel CreateMainPanel1()
+        private Grid CreateSubGrid1()
         {
-            StackPanel mainPanel1 = new StackPanel { Orientation = Orientation.Vertical };
-
+            Grid subGrid1 = new Grid ();
+            subGrid1.ColumnDefinitions.Add(new ColumnDefinition());
+            subGrid1.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            subGrid1.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            subGrid1.RowDefinitions.Add(new RowDefinition());
+            subGrid1.RowDefinitions.Add(new RowDefinition());
+            subGrid1.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            subGrid1.RowDefinitions.Add(new RowDefinition());
+            
+ 
             TextBlock productHeading = new TextBlock
             {
                 Text = "Produkter",
@@ -121,32 +129,29 @@ namespace TheMarket
                 FontSize = 18,
                 TextAlignment = TextAlignment.Center
             };
-            mainPanel1.Children.Add(productHeading);
-
-            Grid productGrid = new Grid
-            {
-                MinHeight = 300,
-                Margin = new Thickness(5)
-            };
-            mainPanel1.Children.Add(productGrid);
-            productGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            productGrid.RowDefinitions.Add(new RowDefinition());
-            productGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
+            subGrid1.Children.Add(productHeading);
+            Grid.SetRow(productHeading, 0);
+            Grid.SetColumn(productHeading, 0);
+            
             ListBox productBox = new ListBox { Margin = new Thickness(5) };
-            productGrid.Children.Add(productBox);
+            subGrid1.Children.Add(productBox);
+            Grid.SetRow(productBox, 1);
+            Grid.SetColumn(productBox, 0);
+
             productBox.Items.Add("Produkter");
             productBox.Items.Add("Produkter");
             productBox.Items.Add("Produkter");
 
 
-            //denna textbox läser från user
+            // textbox som läser rabattkod från användaren
             TextBox discountText = new TextBox
             {
-                Text = "Skriv kod:",
+                Text = "",
                 Margin = new Thickness(50, 10, 50, 10),
             };
-            mainPanel1.Children.Add(discountText);
+            subGrid1.Children.Add(discountText);
+            Grid.SetRow(discountText, 2);
+            Grid.SetColumn(discountText, 0);
 
             Button applyCodeButton = new Button
             {
@@ -154,7 +159,8 @@ namespace TheMarket
                 Margin = new Thickness(50, 10, 50, 10)
 
             };
-            mainPanel1.Children.Add(applyCodeButton);
+            subGrid1.Children.Add(applyCodeButton);
+            Grid.SetRow(applyCodeButton, 3);
 
             TextBlock totalPrice = new TextBlock
             {
@@ -163,17 +169,19 @@ namespace TheMarket
                 FontSize = 17,
                 TextAlignment = TextAlignment.Center
             };
-            mainPanel1.Children.Add(totalPrice);
+            subGrid1.Children.Add(totalPrice);
+            Grid.SetRow(totalPrice, 4);
 
             Button payButton = new Button
             {
                 Content = "Betala",
                 Margin = new Thickness(50, 10, 50, 10)
             };
-            mainPanel1.Children.Add(payButton);
+            subGrid1.Children.Add(payButton);
+            Grid.SetRow(payButton, 5);
 
 
-            return mainPanel1;
+            return subGrid1;
         }
 
         private Grid CreateMainGrid2()
@@ -258,7 +266,7 @@ namespace TheMarket
 
             StackPanel recieptPanel = new StackPanel { Orientation = Orientation.Vertical };
             subGrid3.Children.Add(recieptPanel);
-  Grid.SetColumn(recieptPanel, 0);
+            Grid.SetColumn(recieptPanel, 0);
             Grid.SetRow(recieptPanel, 3);
 
             TextBlock recieptLabel = new TextBlock
