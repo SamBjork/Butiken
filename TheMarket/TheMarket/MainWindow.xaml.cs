@@ -25,7 +25,7 @@ namespace TheMarket
 
 
 
-        string[] lines = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\Varor.txt");
+        string[] Products = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\Varor.txt");
         string[] Discount = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\Rabatt.txt");
         string[] Cart = File.ReadAllLines(@"C:\Windows\Temp\Cart.csv");
 
@@ -93,14 +93,14 @@ namespace TheMarket
             subGrid1.Children.Add(productBox);
             Grid.SetRow(productBox, 1);
             Grid.SetColumn(productBox, 0);
-            int lineLength = lines.Length;
+            int lineLength = this.Products.Length;
 
             List<string> Products = new List<string>();
             List<int> Prices = new List<int>();
 
             for (int i = 0; i < lineLength; i++)
             {
-                string line = lines[i];
+                string line = this.Products[i];
 
                 int number = 0;
                 string Serienummer = "";
@@ -182,7 +182,7 @@ namespace TheMarket
 
             void codevalidator(object sender, RoutedEventArgs e)
             {
-                for (int i = 0; i < lines.Length - 1; i++)
+                for (int i = 0; i < this.Products.Length - 1; i++)
                 {
                     string line = Discount[i];
 
@@ -196,7 +196,7 @@ namespace TheMarket
                         number++;
                     }
 
-                    if (i + 2 == lines.Length && DiscountAmount == 1)
+                    if (i + 2 == this.Products.Length && DiscountAmount == 1)
                     {
                         MessageBox.Show("Du angav en felaktig kod");
                     }
@@ -222,7 +222,6 @@ namespace TheMarket
                                 information += PosJ;
                             }
                         }
-
                     }
                 }
             }
@@ -303,8 +302,6 @@ namespace TheMarket
             Grid.SetColumn(subGrid3, 3);
 
 
-
-
             TextBlock cartHeading = new TextBlock
             {
                 Text = "Varukorg",
@@ -322,38 +319,38 @@ namespace TheMarket
             Grid.SetRow(cartBox, 1);
             Grid.SetColumn(cartBox, 0);
 
-            //cartBox.Items.Add("Produkter");
+   
+                List<string> CartProducts = new List<string>();
+                List<int> CartPrices = new List<int>();
 
-            List<string> CartProducts = new List<string>();
-            List<int> CartPrices = new List<int>();
+                CartProducts.Add("");
+                CartPrices.Add(0);
 
-            CartProducts.Add("");
-            CartPrices.Add(0);
-
-            for (int i = 0; i < Cart.Length; i++)
-            {
-                string Pos = Cart[i];
-                int number = 0;
-                string information = "";
-                while (Pos[number] != '(')
+                for (int i = 0; i < Cart.Length; i++)
                 {
-                    information += Pos[number];
+                    string Pos = Cart[i];
+                    int number = 0;
+                    string information = "";
+                    while (Pos[number] != '(')
+                    {
+                        information += Pos[number];
+                        number++;
+                    }
+                    CartProducts.Add(information);
                     number++;
+                    information = "";
+                    while (Pos[number] != ')')
+                    {
+                        information += Pos[number];
+                        number++;
+                    }
+                    CartPrices.Add(Convert.ToInt32(information));
                 }
-                CartProducts.Add(information);
-                number++;
-                information = "";
-                while (Pos[number] != ')')
+                for (int i = 1; i < CartProducts.Count; i++)
                 {
-                    information += Pos[number];
-                    number++;
+                    cartBox.Items.Add(CartProducts[i] + " " + CartPrices[i] + "kr");
                 }
-                CartPrices.Add(Convert.ToInt32(information));
-            }
-            for (int i = 1; i < CartProducts.Count; i++)
-            {
-                cartBox.Items.Add(CartProducts[i] + " " + CartPrices[i] + "kr");
-            }
+            
 
             saveButton.Click += saveQuit;
             addButton.Click += transfer;
@@ -485,7 +482,7 @@ namespace TheMarket
 
             TextBlock instruction1 = new TextBlock()
             {
-                Text = "Du kan enkelt lägga till varor i din varukorg genom att välja en produkt och klicka på Lägg till - knappen.",
+                Text = "Du kan enkelt lägga till varor i din varukorg genom att välja en produkt och klicka på Lägg till Produkt - knappen.",
                 TextWrapping = TextWrapping.Wrap,
                 Margin = new Thickness(5),
                 FontSize = 15,
@@ -494,7 +491,7 @@ namespace TheMarket
             instructionPanel.Children.Add(instruction1);
             TextBlock instruction2 = new TextBlock()
             {
-                Text = "För att lägga tillbaka en vara, välj den i varukorgen och klicka på Ta bort - knappen.",
+                Text = "För att lägga tillbaka en vara, välj den i varukorgen och klicka på Ta bort Produkt - knappen.",
                 TextWrapping = TextWrapping.Wrap,
                 Margin = new Thickness(5),
                 FontSize = 15,
@@ -510,6 +507,7 @@ namespace TheMarket
                 TextAlignment = TextAlignment.Left
             };
             instructionPanel.Children.Add(instruction3);
+           
 
             return infoPanel;
         }
