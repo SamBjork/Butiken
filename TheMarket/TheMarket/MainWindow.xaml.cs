@@ -22,25 +22,119 @@ namespace TheMarket
     public partial class MainWindow : Window
     {
 
-
-
-
-        string[] Products = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\Varor.txt");
-        string[] Discount = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\Rabatt.txt");
-        string[] Cart = File.ReadAllLines(@"C:\Windows\Temp\Cart.csv");
+        string[] Products;
+        string[] Discount;
+        string[] Cart = File.ReadAllLines(@"C:\Windows\Temp\IkeaCart.csv");
 
         float Bank = 2000;
         private TextBlock recieptBlock;
         public MainWindow()
         {
             InitializeComponent();
-            Start();
+            Start1();
         }
-        private void Start()
-        {
 
+        private void Start1()
+        {
+            if (File.Exists(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\IkeaVaror.txt"))
+            {
+                Products = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\IkeaVaror.txt");
+            }
+            else
+            {
+                MessageBox.Show(@"Error: Filen som innehåller Produkterna finns inte");
+                Environment.Exit(0);
+            }
+            if (File.Exists(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\Rabatt.txt"))
+            {
+                Discount = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\Rabatt.txt");
+            }
+            else
+            {
+                MessageBox.Show(@"Error: Filen som innehåller rabatter finns inte");
+                Environment.Exit(0);
+            }
+
+            if (File.Exists(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\ApotekVaror.txt"))
+            {
+                Products = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\ApotekVaror.txt");
+            }
+            else
+            {
+                MessageBox.Show(@"Error: Filen som innehåller Produkterna finns inte");
+                Environment.Exit(0);
+            }
+
+            if (File.Exists(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\IkeaVaror.txt"))
+            {
+                Products = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\IkeaVaror.txt");
+            }
+            else
+            {
+                MessageBox.Show(@"Error: Filen som innehåller Produkterna finns inte");
+                Environment.Exit(0);
+            }
 
             Title = "The Market";
+            Width = 1000;
+            Height = 600;
+            WindowStartupLocation = WindowStartupLocation.CenterScreen;
+
+            ScrollViewer scroll = (ScrollViewer)Content;
+
+            Grid mainGrid = new Grid();
+            scroll.Content = mainGrid;
+            mainGrid.Margin = new Thickness(5);
+
+            mainGrid.ColumnDefinitions.Add(new ColumnDefinition());
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            mainGrid.RowDefinitions.Add(new RowDefinition());
+            mainGrid.RowDefinitions.Add(new RowDefinition());
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+            TextBlock chooseStore = new TextBlock
+            {
+               Text = "Välj butik!",
+               FontSize = 50,
+               TextAlignment = TextAlignment.Center
+            };
+            mainGrid.Children.Add(chooseStore);
+            Grid.SetRow(chooseStore, 0);
+
+            Button firstStore = new Button
+            {
+                Content = "IKEA",
+                Margin = new Thickness(5)
+            };
+            mainGrid.Children.Add(firstStore);
+            Grid.SetRow(firstStore, 1);
+            firstStore.Click += FirstStore_Click;
+
+            Button secondStore = new Button
+            {
+                Content = "Apoteket",
+                Margin = new Thickness(5)
+            };
+            mainGrid.Children.Add(secondStore);
+            Grid.SetRow(secondStore, 2);
+            secondStore.Click += SecondStore_Click;
+        }
+
+        void FirstStore_Click(object sender, RoutedEventArgs e)
+        {
+            Start2();
+        }
+
+        void SecondStore_Click(object sender, RoutedEventArgs e)
+        {
+            Products = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\ApotekVaror.txt");
+            Cart = File.ReadAllLines(@"C:\Windows\Temp\ApotekCart.csv");
+            Start2();
+        }
+        private void Start2()
+        {
+
+            Title = "Butiken";
             Width = 1000;
             Height = 600;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
@@ -158,7 +252,7 @@ namespace TheMarket
             }
 
 
-            // textbox som läser rabattkod från användaren
+          
             TextBox discountBox = new TextBox
             {
                 Text = "",
@@ -182,7 +276,7 @@ namespace TheMarket
 
             void codevalidator(object sender, RoutedEventArgs e)
             {
-                for (int i = 0; i < this.Products.Length - 1; i++)
+                for (int i = 0; i < Discount.Length; i++)
                 {
                     string line = Discount[i];
 
@@ -196,7 +290,7 @@ namespace TheMarket
                         number++;
                     }
 
-                    if (i + 2 == this.Products.Length && DiscountAmount == 1)
+                    if (i == Discount.Length && DiscountAmount == 1)
                     {
                         MessageBox.Show("Du angav en felaktig kod");
                     }
@@ -222,10 +316,11 @@ namespace TheMarket
                                 information += PosJ;
                             }
                         }
+
                     }
                 }
             }
-            TextBlock totalPrice = new TextBlock
+                TextBlock totalPrice = new TextBlock
             {
                 Text = "Dina pengar: " + Bank,
                 Margin = new Thickness(5),
@@ -265,7 +360,8 @@ namespace TheMarket
             subGrid2.Children.Add(buttonPanel1);
             Grid.SetColumn(buttonPanel1, 0);
             Grid.SetRow(buttonPanel1, 0);
-
+         
+            
             Button addButton = new Button
             {
                 Content = "Lägg till Produkt",
@@ -374,10 +470,16 @@ namespace TheMarket
                 cartBox.Items.Add(productBox.SelectedItem);
 
                 int select = productBox.Items.IndexOf(productBox.SelectedItem);
-
+                try
+                {
                 CartProducts.Add(Products[select]);
                 CartPrices.Add(Prices[select]);
-
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Du måste välja en produkt att lägga till i varukorgen");
+                }
+           
             }
             void remove(object sender, RoutedEventArgs e)
             {
@@ -387,15 +489,31 @@ namespace TheMarket
                 {
                     if (cartBox.Items.IndexOf(cartBox.SelectedItem) >= 0)
                     {
+                        try
+                        {
                         CartPrices.RemoveAt(select);
                         CartProducts.RemoveAt(select);
                         cartBox.Items.RemoveAt(cartBox.Items.IndexOf(cartBox.SelectedItem));
+                        }
+                        catch (Exception)
+                        {
+                            MessageBox.Show("Du har inga produkter att ta bort från varukorgen!");
+                        }
+                        
                     }
                     else if (cartBox.Items.Count >= 0)
                     {
+                       try
+                        { 
                         CartPrices.RemoveAt(1);
                         CartProducts.RemoveAt(1);
                         cartBox.Items.RemoveAt(0);
+                        }
+                        catch (Exception)
+                        {
+                            MessageBox.Show("Du har inga produkter att ta bort från varukorgen!");
+                        }
+                        
                     }
                 }
             }
@@ -413,10 +531,7 @@ namespace TheMarket
                 TextAlignment = TextAlignment.Center
             };
             recieptPanel.Children.Add(recieptLabel);
-
-
-            //gör en for loop här kanske, för att lägga till alla produkter(och rabattkod) på "kvittot"
-            //som här blir en mängd textblock
+           
 
             recieptBlock = new TextBlock
             {
@@ -450,17 +565,15 @@ namespace TheMarket
                     recieptBlock.Text += "\n-------------------------------------------";
                     recieptBlock.Text += "\nTotal" + "                                                " +
                     sum + "kr";
+
+                    
                 }
                 else
                 {
                     MessageBox.Show("Du har inte nog med pengar");
                 }
 
-
             }
-
-
-
 
         }
         private StackPanel CreateInfoPanel()
@@ -507,7 +620,16 @@ namespace TheMarket
                 TextAlignment = TextAlignment.Left
             };
             instructionPanel.Children.Add(instruction3);
-           
+            TextBlock instruction4 = new TextBlock()
+            {
+                Text = "Har du en rabattkod kan du skriva in den ovanför i fältet under Produktlistan, sedan klicka på Tillämpa rabatt - knappen.",
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(5),
+                FontSize = 15,
+                TextAlignment = TextAlignment.Left
+            };
+            instructionPanel.Children.Add(instruction4);
+
 
             return infoPanel;
         }
