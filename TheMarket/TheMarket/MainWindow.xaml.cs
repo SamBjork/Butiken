@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,8 +21,16 @@ namespace TheMarket
     /// </summary>
     public partial class MainWindow : Window
     {
-        private TextBlock recieptBlock;
 
+
+
+
+        string[] lines = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\Varor.txt");
+        string[] Discount = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\Rabatt.txt");
+        string[] Cart = File.ReadAllLines(@"C:\Windows\Temp\Cart.csv");
+
+        float Bank = 2000;
+        private TextBlock recieptBlock;
         public MainWindow()
         {
             InitializeComponent();
@@ -29,6 +38,8 @@ namespace TheMarket
         }
         private void Start()
         {
+
+
             Title = "The Market";
             Width = 1000;
             Height = 600;
@@ -46,29 +57,414 @@ namespace TheMarket
             mainGrid.ColumnDefinitions.Add(new ColumnDefinition());
             mainGrid.ColumnDefinitions.Add(new ColumnDefinition());
             mainGrid.RowDefinitions.Add(new RowDefinition());
-            
 
-            
+
             StackPanel infoPanel = CreateInfoPanel();
             mainGrid.Children.Add(infoPanel);
             Grid.SetRow(infoPanel, 0);
             Grid.SetColumn(infoPanel, 0);
-            
 
-            Grid SubGrid1 = CreateSubGrid1();
-            mainGrid.Children.Add(SubGrid1);
-            Grid.SetRow(SubGrid1, 0);
-            Grid.SetColumn(SubGrid1, 1);
 
-            Grid subGrid2 = CreateSubGrid2();
+            Grid subGrid1 = new Grid();
+            subGrid1.ColumnDefinitions.Add(new ColumnDefinition());
+            subGrid1.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            subGrid1.RowDefinitions.Add(new RowDefinition());
+            subGrid1.RowDefinitions.Add(new RowDefinition());
+            subGrid1.RowDefinitions.Add(new RowDefinition());
+            subGrid1.RowDefinitions.Add(new RowDefinition());
+            subGrid1.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+            mainGrid.Children.Add(subGrid1);
+            Grid.SetColumn(subGrid1, 1);
+
+            TextBlock productHeading = new TextBlock
+            {
+                Text = "Produkter",
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 10, 0, 10),
+                FontSize = 18,
+                TextAlignment = TextAlignment.Center
+            };
+            subGrid1.Children.Add(productHeading);
+            Grid.SetRow(productHeading, 0);
+            Grid.SetColumn(productHeading, 0);
+
+            ListBox productBox = new ListBox { Margin = new Thickness(5) };
+            subGrid1.Children.Add(productBox);
+            Grid.SetRow(productBox, 1);
+            Grid.SetColumn(productBox, 0);
+            int lineLength = lines.Length;
+
+            List<string> Products = new List<string>();
+            List<int> Prices = new List<int>();
+
+            for (int i = 0; i < lineLength; i++)
+            {
+                string line = lines[i];
+
+                int number = 0;
+                string Serienummer = "";
+
+                while (line[number] != ':')
+                {
+                    Serienummer += line[number];
+                    number++;
+                }
+
+                string information = "";
+                string Item = "";
+                int Price = 0;
+                bool DetectingPrice = false;
+
+                for (int j = number + 2; j < line.Length; j++)
+                {
+                    char PosJ = line[j];
+                    if (PosJ == '-')
+                    {
+                        information = information.Substring(0, j - (number + 3));
+                        Item = information;
+                        information = "";
+                    }
+                    else if (PosJ == '(')
+                    {
+                        information = "";
+                        DetectingPrice = true;
+                    }
+                    else if (PosJ == 'k' && DetectingPrice == true)
+                    {
+                        Price = Convert.ToInt32(information);
+
+                        Products.Add(Item);
+                        Prices.Add(Price);
+
+                        productBox.Items.Add(Item + " " + Price + "kr");
+
+
+                    }
+
+                    else
+                    {
+                        information += PosJ;
+                    }
+
+                    //productBox.SelectionChanged += selectproduct;
+                    //void selectproduct(object sender, RoutedEventArgs e)
+                    //{
+                    //indexleft = productBox.SelectedIndex;
+                    //product = productBox.Items[indexleft].ToString();
+                    //}
+                }
+
+            }
+
+
+            // textbox som läser rabattkod från användaren
+            TextBox discountBox = new TextBox
+            {
+                Text = "",
+                Margin = new Thickness(50, 20, 50, 20),
+            };
+            subGrid1.Children.Add(discountBox);
+            Grid.SetRow(discountBox, 2);
+            Grid.SetColumn(discountBox, 0);
+
+            Button applyCodeButton = new Button
+            {
+                Content = "Tillämpa Rabatt",
+                Margin = new Thickness(50, 10, 50, 10)
+
+            };
+            subGrid1.Children.Add(applyCodeButton);
+            Grid.SetRow(applyCodeButton, 3);
+
+            float DiscountAmount = 1;
+            applyCodeButton.Click += codevalidator;
+
+            void codevalidator(object sender, RoutedEventArgs e)
+            {
+                for (int i = 0; i < lines.Length - 1; i++)
+                {
+                    string line = Discount[i];
+
+
+                    int number = 0;
+                    string Rabattkod = "";
+
+                    while (line[number] != '(')
+                    {
+                        Rabattkod += line[number];
+                        number++;
+                    }
+
+                    if (i + 2 == lines.Length && DiscountAmount == 1)
+                    {
+                        MessageBox.Show("Du angav en felaktig kod");
+                    }
+                    else if (Rabattkod == discountBox.Text)
+                    {
+                        string information = "";
+
+                        number++;
+                        for (int j = number; j < line.Length; j++)
+                        {
+                            char PosJ = line[j];
+                            if (PosJ == '%')
+                            {
+                                information = information.Substring(0, j - (number));
+
+
+                                DiscountAmount = Convert.ToInt64(information);
+                                DiscountAmount = (100 - DiscountAmount) / 100;
+                                MessageBox.Show("du använde koden: " + discountBox.Text + " för " + information + "% avdrag från ditt köp");
+                            }
+                            else
+                            {
+                                information += PosJ;
+                            }
+                        }
+
+                    }
+                }
+            }
+            TextBlock totalPrice = new TextBlock
+            {
+                Text = "Dina pengar: " + Bank,
+                Margin = new Thickness(5),
+                FontSize = 17,
+                TextAlignment = TextAlignment.Center
+            };
+            subGrid1.Children.Add(totalPrice);
+            Grid.SetRow(totalPrice, 4);
+
+            Button payButton = new Button
+            {
+                Content = "Betala",
+                Margin = new Thickness(50, 10, 50, 10)
+            };
+            subGrid1.Children.Add(payButton);
+            Grid.SetRow(payButton, 5);
+
+
+
+            Grid subGrid2 = new Grid();
+            subGrid2.ColumnDefinitions.Add(new ColumnDefinition());
+            subGrid2.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            subGrid2.RowDefinitions.Add(new RowDefinition());
+            subGrid2.RowDefinitions.Add(new RowDefinition());
+            subGrid2.RowDefinitions.Add(new RowDefinition());
+            subGrid2.RowDefinitions.Add(new RowDefinition());
+            subGrid2.RowDefinitions.Add(new RowDefinition());
+            subGrid2.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             mainGrid.Children.Add(subGrid2);
-            Grid.SetRow(subGrid2, 0);
             Grid.SetColumn(subGrid2, 2);
 
-            Grid subGrid3 = CreateSubGrid3();
+            StackPanel buttonPanel1 = new StackPanel
+            {
+                Orientation = Orientation.Vertical,
+                Margin = new Thickness(5)
+            };
+            subGrid2.Children.Add(buttonPanel1);
+            Grid.SetColumn(buttonPanel1, 0);
+            Grid.SetRow(buttonPanel1, 0);
+
+            Button addButton = new Button
+            {
+                Content = "Lägg till Produkt",
+                Margin = new Thickness(50, 70, 50, 40)
+            };
+            buttonPanel1.Children.Add(addButton);
+
+
+            Button removeButton = new Button
+            {
+                Content = "Ta bort Produkt",
+                Margin = new Thickness(50, 40, 50, 40)
+            };
+            buttonPanel1.Children.Add(removeButton);
+
+            Button saveButton = new Button
+            {
+                Content = "Spara och Avsluta",
+                Margin = new Thickness(50, 40, 50, 40)
+            };
+            buttonPanel1.Children.Add(saveButton);
+
+            Grid subGrid3 = new Grid();
+            subGrid3.ColumnDefinitions.Add(new ColumnDefinition());
+
+            subGrid3.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            subGrid3.RowDefinitions.Add(new RowDefinition());
+            subGrid3.RowDefinitions.Add(new RowDefinition());
+            subGrid3.RowDefinitions.Add(new RowDefinition());
+            subGrid3.RowDefinitions.Add(new RowDefinition());
+            subGrid3.RowDefinitions.Add(new RowDefinition());
+            subGrid3.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             mainGrid.Children.Add(subGrid3);
-            Grid.SetRow(subGrid3, 0);
             Grid.SetColumn(subGrid3, 3);
+
+
+
+
+            TextBlock cartHeading = new TextBlock
+            {
+                Text = "Varukorg",
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 10, 0, 10),
+                FontSize = 18,
+                TextAlignment = TextAlignment.Center
+            };
+            subGrid3.Children.Add(cartHeading);
+            Grid.SetRow(cartHeading, 0);
+            Grid.SetColumn(cartHeading, 0);
+
+            ListBox cartBox = new ListBox { Margin = new Thickness(5) };
+            subGrid3.Children.Add(cartBox);
+            Grid.SetRow(cartBox, 1);
+            Grid.SetColumn(cartBox, 0);
+
+            //cartBox.Items.Add("Produkter");
+
+            List<string> CartProducts = new List<string>();
+            List<int> CartPrices = new List<int>();
+
+            CartProducts.Add("");
+            CartPrices.Add(0);
+
+            for (int i = 0; i < Cart.Length; i++)
+            {
+                string Pos = Cart[i];
+                int number = 0;
+                string information = "";
+                while (Pos[number] != '(')
+                {
+                    information += Pos[number];
+                    number++;
+                }
+                CartProducts.Add(information);
+                number++;
+                information = "";
+                while (Pos[number] != ')')
+                {
+                    information += Pos[number];
+                    number++;
+                }
+                CartPrices.Add(Convert.ToInt32(information));
+            }
+            for (int i = 1; i < CartProducts.Count; i++)
+            {
+                cartBox.Items.Add(CartProducts[i] + " " + CartPrices[i] + "kr");
+            }
+
+            saveButton.Click += saveQuit;
+            addButton.Click += transfer;
+            removeButton.Click += remove;
+
+            void saveQuit(object sender, RoutedEventArgs e)
+            {
+                List<string> Savings = new List<string>();
+                for (int i = 1; i < CartProducts.Count; i++)
+                {
+                    Savings.Add(CartProducts[i] + "(" + CartPrices[i] + ")");
+                }
+
+
+                File.WriteAllLines(@"C:\Windows\Temp\Cart.csv", Savings);
+
+                Environment.Exit(0);
+            }
+            void transfer(object sender, RoutedEventArgs e)
+            {
+                cartBox.Items.Add(productBox.SelectedItem);
+
+                int select = productBox.Items.IndexOf(productBox.SelectedItem);
+
+                CartProducts.Add(Products[select]);
+                CartPrices.Add(Prices[select]);
+
+            }
+            void remove(object sender, RoutedEventArgs e)
+            {
+                int select = cartBox.Items.IndexOf(cartBox.SelectedItem) + 1;
+
+                if (cartBox.Items.Count != 0)
+                {
+                    if (cartBox.Items.IndexOf(cartBox.SelectedItem) >= 0)
+                    {
+                        CartPrices.RemoveAt(select);
+                        CartProducts.RemoveAt(select);
+                        cartBox.Items.RemoveAt(cartBox.Items.IndexOf(cartBox.SelectedItem));
+                    }
+                    else if (cartBox.Items.Count >= 0)
+                    {
+                        CartPrices.RemoveAt(1);
+                        CartProducts.RemoveAt(1);
+                        cartBox.Items.RemoveAt(0);
+                    }
+                }
+            }
+
+
+            StackPanel recieptPanel = new StackPanel { Orientation = Orientation.Vertical };
+            subGrid3.Children.Add(recieptPanel);
+            Grid.SetColumn(recieptPanel, 0);
+            Grid.SetRow(recieptPanel, 3);
+
+            TextBlock recieptLabel = new TextBlock
+            {
+                Text = "Kvitto:",
+                FontSize = 18,
+                TextAlignment = TextAlignment.Center
+            };
+            recieptPanel.Children.Add(recieptLabel);
+
+
+            //gör en for loop här kanske, för att lägga till alla produkter(och rabattkod) på "kvittot"
+            //som här blir en mängd textblock
+
+            recieptBlock = new TextBlock
+            {
+                Text = "",
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(5)
+            };
+            recieptPanel.Children.Add(recieptBlock);
+
+            float sum = 0;
+            payButton.Click += Pay;
+
+            void Pay(object sender, RoutedEventArgs e)
+            {
+
+                sum = CartPrices.Sum();
+                sum *= DiscountAmount;
+                if (Bank >= sum && CartProducts.Count > 0)
+                {
+                    Bank = Bank - sum;
+
+                    totalPrice.Text = "Dina pengar: " + Bank + " kr";
+                    recieptBlock.Text = "";
+                    for (int i = 1; i < CartProducts.Count; i++)
+                    {
+
+                        recieptBlock.Text += "\n" + CartProducts[i] + "                                                " +
+                        " " + CartPrices[i];
+
+                    }
+                    recieptBlock.Text += "\n-------------------------------------------";
+                    recieptBlock.Text += "\nTotal" + "                                                " +
+                    sum + "kr";
+                }
+                else
+                {
+                    MessageBox.Show("Du har inte nog med pengar");
+                }
+
+
+            }
+
+
+
+
         }
         private StackPanel CreateInfoPanel()
         {
@@ -84,216 +480,40 @@ namespace TheMarket
             };
             infoPanel.Children.Add(mainHeading);
 
-            TextBlock instructionsHeading = new TextBlock
-            {
-                Text = "Instruktioner:",
-                TextWrapping = TextWrapping.Wrap,
-                Margin = new Thickness(5),
-                FontSize = 18,
-                TextAlignment = TextAlignment.Left
-            };
-            infoPanel.Children.Add(instructionsHeading);
+            StackPanel instructionPanel = new StackPanel();
+            infoPanel.Children.Add(instructionPanel);
 
-            //Kanske läsa in instrukioner från en textfil istället för att hårdkoda
-
-            TextBlock instructionBlock = new TextBlock()
+            TextBlock instruction1 = new TextBlock()
             {
-                Text = "Här kommer massa instruktioner stå och berätta om hur applikationen fungerar ",
+                Text = "Du kan enkelt lägga till varor i din varukorg genom att välja en produkt och klicka på Lägg till - knappen.",
                 TextWrapping = TextWrapping.Wrap,
                 Margin = new Thickness(5),
                 FontSize = 15,
                 TextAlignment = TextAlignment.Left
-
             };
-            infoPanel.Children.Add(instructionBlock);
+            instructionPanel.Children.Add(instruction1);
+            TextBlock instruction2 = new TextBlock()
+            {
+                Text = "För att lägga tillbaka en vara, välj den i varukorgen och klicka på Ta bort - knappen.",
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(5),
+                FontSize = 15,
+                TextAlignment = TextAlignment.Left
+            };
+            instructionPanel.Children.Add(instruction2);
+            TextBlock instruction3 = new TextBlock()
+            {
+                Text = "Vill du spara din varukorg utan att köpa varorna nu och avlsuta, kan du klicka på Spara och Avsluta- knappen.",
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(5),
+                FontSize = 15,
+                TextAlignment = TextAlignment.Left
+            };
+            instructionPanel.Children.Add(instruction3);
 
             return infoPanel;
-        },
-
-        private Grid CreateSubGrid1()
-        {
-            Grid subGrid1 = new Grid ();
-            subGrid1.ColumnDefinitions.Add(new ColumnDefinition());
-            subGrid1.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });            
-            subGrid1.RowDefinitions.Add(new RowDefinition ());
-            subGrid1.RowDefinitions.Add(new RowDefinition ());
-            subGrid1.RowDefinitions.Add(new RowDefinition ());
-            subGrid1.RowDefinitions.Add(new RowDefinition ());
-            subGrid1.RowDefinitions.Add(new RowDefinition ());
-            subGrid1.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-
-            TextBlock productHeading = new TextBlock
-            {
-                Text = "Produkter",
-                TextWrapping = TextWrapping.Wrap,
-                Margin = new Thickness(0, 10, 0, 10),
-                FontSize = 18,
-                TextAlignment = TextAlignment.Center
-            };
-            subGrid1.Children.Add(productHeading);
-            Grid.SetRow(productHeading, 0);
-            Grid.SetColumn(productHeading, 0);
-            
-            ListBox productBox = new ListBox { Margin = new Thickness(5) };
-            subGrid1.Children.Add(productBox);
-           
-            productBox.Items.Add("Produkter");
-            productBox.Items.Add("Produkter");
-            productBox.Items.Add("Produkter");
- Grid.SetRow(productBox, 1);
-            Grid.SetColumn(productBox, 0);
-            Grid.SetRowSpan(productBox, 2);
-            
-
-            
-
-            // textbox som läser rabattkod från användaren
-            TextBox discountBox = new TextBox
-            {
-                Text = "",
-                Margin = new Thickness(50, 30, 50, 0),
-            };
-            subGrid1.Children.Add(discountBox);
-            Grid.SetRow(discountBox, 3);
-            Grid.SetColumn(discountBox, 0);
-
-            Button applyCodeButton = new Button
-            {
-                Content = "Tillämpa Rabatt",
-                Margin = new Thickness(50, 5, 50, 5)
-
-            };
-            subGrid1.Children.Add(applyCodeButton);
-            Grid.SetRow(applyCodeButton, 4);
-
-            TextBlock totalPrice = new TextBlock
-            {
-                Text = "Totalt pris: 20192 Kr",
-                Margin = new Thickness(30, 10, 30, 0),
-                FontSize = 17,
-                TextAlignment = TextAlignment.Center,
-            };
-            subGrid1.Children.Add(totalPrice);
-            Grid.SetRow(totalPrice, 5);
-
-            Button payButton = new Button
-            {
-                Content = "Betala",
-                Margin = new Thickness(50, 0, 50, 10)
-            };
-            subGrid1.Children.Add(payButton);
-            Grid.SetRow(payButton, 6);
-
-
-            return subGrid1;
         }
 
-        private Grid CreateSubGrid2()
-        {
-            Grid subGrid2 = new Grid();
-            subGrid2.ColumnDefinitions.Add(new ColumnDefinition());
-            subGrid2.RowDefinitions.Add(new RowDefinition ());
-           
 
-            StackPanel buttonPanel1 = new StackPanel
-            {
-                Orientation = Orientation.Vertical,
-                Margin = new Thickness(5)
-            };
-            subGrid2.Children.Add(buttonPanel1);
-            Grid.SetColumn(buttonPanel1, 0);
-            Grid.SetRow(buttonPanel1, 0);
-           
-
-            Button addButton = new Button
-            {
-                Content = "Lägg till Produkt",
-                Margin = new Thickness(50, 40, 50, 30)
-            };
-            buttonPanel1.Children.Add(addButton);
-
-
-            Button removeButton = new Button
-            {
-                Content = "Ta bort Produkt",
-                Margin = new Thickness(50, 30, 50, 30)
-            };
-            buttonPanel1.Children.Add(removeButton);
-
-            Button saveButton = new Button
-            {
-                Content = "Spara Varukorgen",
-                Margin = new Thickness(50, 30, 50, 40)
-            };
-            buttonPanel1.Children.Add(saveButton);
-
-            return subGrid2;
-
-        }
-
-        private Grid CreateSubGrid3()
-        {
-            Grid subGrid3 = new Grid();
-            subGrid3.ColumnDefinitions.Add(new ColumnDefinition());
-            
-            subGrid3.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            subGrid3.RowDefinitions.Add(new RowDefinition());
-            subGrid3.RowDefinitions.Add(new RowDefinition());
-            subGrid3.RowDefinitions.Add(new RowDefinition());
-            subGrid3.RowDefinitions.Add(new RowDefinition());
-            subGrid3.RowDefinitions.Add(new RowDefinition());
-            subGrid3.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            
-
-            TextBlock cartHeading = new TextBlock
-            {
-                Text = "Varukorg",
-                TextWrapping = TextWrapping.Wrap,
-                Margin = new Thickness(0, 10, 0, 10),
-                FontSize = 18,
-                TextAlignment = TextAlignment.Center
-            };
-            subGrid3.Children.Add(cartHeading);
-            Grid.SetRow(cartHeading, 0);
-            Grid.SetColumn(cartHeading, 0);
-
-            ListBox productBox = new ListBox { Margin = new Thickness(5) };
-            subGrid3.Children.Add(productBox);
-            Grid.SetRow(productBox, 1);
-            Grid.SetColumn(productBox, 0);
-            Grid.SetRowSpan(productBox, 2);
-
-            productBox.Items.Add("Produkter");
-            productBox.Items.Add("Produkter");
-            productBox.Items.Add("Produkter");
-
-            StackPanel recieptPanel = new StackPanel { Orientation = Orientation.Vertical };
-            subGrid3.Children.Add(recieptPanel);
-            Grid.SetColumn(recieptPanel, 0);
-            Grid.SetRow(recieptPanel, 3);
-
-            TextBlock recieptLabel = new TextBlock
-            {
-                Text = "Kvitto:",
-                FontSize = 18,
-               TextAlignment = TextAlignment.Center
-            };
-            recieptPanel.Children.Add(recieptLabel);
-  
-
-            //gör en for loop här kanske, för att lägga till alla produkter(och rabattkod) på "kvittot"
-            //som här blir en mängd textblock
-
-              recieptBlock = new TextBlock
-            {
-                Text = "1 st Banan: 6 kr",
-                TextWrapping = TextWrapping.Wrap,
-                Margin = new Thickness(5)
-            };
-            recieptPanel.Children.Add(recieptBlock);
-
-            return subGrid3;
-        }
     }
 }
