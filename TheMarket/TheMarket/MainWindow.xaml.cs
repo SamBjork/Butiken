@@ -22,9 +22,13 @@ namespace TheMarket
     public partial class MainWindow : Window
     {
 
+
+
+
         string[] Products;
         string[] Discount;
-        string[] Cart = File.ReadAllLines(@"C:\Windows\Temp\IkeaCart.csv");
+        string[] Cart;
+        int Store = 0;
 
         float Bank = 2000;
         private TextBlock recieptBlock;
@@ -36,15 +40,7 @@ namespace TheMarket
 
         private void Start1()
         {
-            if (File.Exists(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\IkeaVaror.txt"))
-            {
-                Products = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\IkeaVaror.txt");
-            }
-            else
-            {
-                MessageBox.Show(@"Error: Filen som innehåller Produkterna finns inte");
-                Environment.Exit(0);
-            }
+
             if (File.Exists(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\Rabatt.txt"))
             {
                 Discount = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\Rabatt.txt");
@@ -52,26 +48,6 @@ namespace TheMarket
             else
             {
                 MessageBox.Show(@"Error: Filen som innehåller rabatter finns inte");
-                Environment.Exit(0);
-            }
-
-            if (File.Exists(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\ApotekVaror.txt"))
-            {
-                Products = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\ApotekVaror.txt");
-            }
-            else
-            {
-                MessageBox.Show(@"Error: Filen som innehåller Produkterna finns inte");
-                Environment.Exit(0);
-            }
-
-            if (File.Exists(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\IkeaVaror.txt"))
-            {
-                Products = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\IkeaVaror.txt");
-            }
-            else
-            {
-                MessageBox.Show(@"Error: Filen som innehåller Produkterna finns inte");
                 Environment.Exit(0);
             }
 
@@ -94,9 +70,9 @@ namespace TheMarket
 
             TextBlock chooseStore = new TextBlock
             {
-               Text = "Välj butik!",
-               FontSize = 50,
-               TextAlignment = TextAlignment.Center
+                Text = "Välj butik!",
+                FontSize = 50,
+                TextAlignment = TextAlignment.Center
             };
             mainGrid.Children.Add(chooseStore);
             Grid.SetRow(chooseStore, 0);
@@ -122,14 +98,55 @@ namespace TheMarket
 
         void FirstStore_Click(object sender, RoutedEventArgs e)
         {
-            Start2();
+
+            if (File.Exists(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\IkeaVaror.txt"))
+            {
+                Products = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\IkeaVaror.txt");
+                Store = 1;
+                if (File.Exists(@"C:\Windows\Temp\IkeaCart.csv"))
+
+                {
+                    Cart = File.ReadAllLines(@"C:\Windows\Temp\IkeaCart.csv");
+                    Start2();
+                }
+
+                else
+                {
+
+
+                    Start2();
+                }
+            }
+            else
+            {
+                MessageBox.Show(@"Error: Filen som innehåller Ikeas Produkterna finns inte(Den borde finns i C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\IkeaVaror.txt)");
+                Environment.Exit(0);
+            }
         }
 
         void SecondStore_Click(object sender, RoutedEventArgs e)
         {
-            Products = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\ApotekVaror.txt");
-            Cart = File.ReadAllLines(@"C:\Windows\Temp\ApotekCart.csv");
-            Start2();
+            if (File.Exists(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\ApotekVaror.txt"))
+            {
+
+                Products = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\ApotekVaror.txt");
+                Store = 2;
+                if (File.Exists(@"C:\Windows\Temp\ApoteketCart.csv"))
+                {
+                    Cart = File.ReadAllLines(@"C:\Windows\Temp\ApoteketCart.csv");
+                    Start2();
+                }
+                else
+                {
+                    Start2();
+                }
+            }
+            else
+            {
+                MessageBox.Show(@"Error: Filen som innehåller Produkterna finns inte(Den borde finnas i C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\ApotekVaror.txt)");
+                Environment.Exit(0);
+            }
+
         }
         private void Start2()
         {
@@ -235,12 +252,10 @@ namespace TheMarket
 
 
                     }
-
                     else
                     {
                         information += PosJ;
                     }
-
                     //productBox.SelectionChanged += selectproduct;
                     //void selectproduct(object sender, RoutedEventArgs e)
                     //{
@@ -252,7 +267,7 @@ namespace TheMarket
             }
 
 
-          
+
             TextBox discountBox = new TextBox
             {
                 Text = "",
@@ -320,7 +335,7 @@ namespace TheMarket
                     }
                 }
             }
-                TextBlock totalPrice = new TextBlock
+            TextBlock totalPrice = new TextBlock
             {
                 Text = "Dina pengar: " + Bank,
                 Margin = new Thickness(5),
@@ -360,8 +375,8 @@ namespace TheMarket
             subGrid2.Children.Add(buttonPanel1);
             Grid.SetColumn(buttonPanel1, 0);
             Grid.SetRow(buttonPanel1, 0);
-         
-            
+
+
             Button addButton = new Button
             {
                 Content = "Lägg till Produkt",
@@ -415,12 +430,15 @@ namespace TheMarket
             Grid.SetRow(cartBox, 1);
             Grid.SetColumn(cartBox, 0);
 
-   
-                List<string> CartProducts = new List<string>();
-                List<int> CartPrices = new List<int>();
 
-                CartProducts.Add("");
-                CartPrices.Add(0);
+            List<string> CartProducts = new List<string>();
+            List<int> CartPrices = new List<int>();
+
+            CartProducts.Add("");
+            CartPrices.Add(0);
+
+            if (File.Exists(@"C:\Windows\Temp\IkeaCart.csv") && Store == 1 || File.Exists(@"C:\Windows\Temp\ApoteketCart.csv") && Store == 2)
+            {
 
                 for (int i = 0; i < Cart.Length; i++)
                 {
@@ -446,7 +464,9 @@ namespace TheMarket
                 {
                     cartBox.Items.Add(CartProducts[i] + " " + CartPrices[i] + "kr");
                 }
-            
+            }
+
+
 
             saveButton.Click += saveQuit;
             addButton.Click += transfer;
@@ -454,16 +474,31 @@ namespace TheMarket
 
             void saveQuit(object sender, RoutedEventArgs e)
             {
-                List<string> Savings = new List<string>();
-                for (int i = 1; i < CartProducts.Count; i++)
+                if (cartBox.Items.Count > 0)
                 {
-                    Savings.Add(CartProducts[i] + "(" + CartPrices[i] + ")");
+
+
+                    List<string> Savings = new List<string>();
+                    for (int i = 1; i < CartProducts.Count; i++)
+                    {
+                        Savings.Add(CartProducts[i] + "(" + CartPrices[i] + ")");
+                    }
+                    if (Store == 1)
+                    {
+                        File.WriteAllLines(@"C:\Windows\Temp\IkeaCart.csv", Savings);
+                        Environment.Exit(0);
+                    }
+                    else if (Store == 2)
+                    {
+                        File.WriteAllLines(@"C:\Windows\Temp\ApotekCart.csv", Savings);
+                        Environment.Exit(0);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Varukorgen är tom och går inte att spara.");
                 }
 
-
-                File.WriteAllLines(@"C:\Windows\Temp\Cart.csv", Savings);
-
-                Environment.Exit(0);
             }
             void transfer(object sender, RoutedEventArgs e)
             {
@@ -472,14 +507,14 @@ namespace TheMarket
                 int select = productBox.Items.IndexOf(productBox.SelectedItem);
                 try
                 {
-                CartProducts.Add(Products[select]);
-                CartPrices.Add(Prices[select]);
+                    CartProducts.Add(Products[select]);
+                    CartPrices.Add(Prices[select]);
                 }
                 catch (Exception)
                 {
                     MessageBox.Show("Du måste välja en produkt att lägga till i varukorgen");
                 }
-           
+
             }
             void remove(object sender, RoutedEventArgs e)
             {
@@ -491,29 +526,29 @@ namespace TheMarket
                     {
                         try
                         {
-                        CartPrices.RemoveAt(select);
-                        CartProducts.RemoveAt(select);
-                        cartBox.Items.RemoveAt(cartBox.Items.IndexOf(cartBox.SelectedItem));
+                            CartPrices.RemoveAt(select);
+                            CartProducts.RemoveAt(select);
+                            cartBox.Items.RemoveAt(cartBox.Items.IndexOf(cartBox.SelectedItem));
                         }
                         catch (Exception)
                         {
                             MessageBox.Show("Du har inga produkter att ta bort från varukorgen!");
                         }
-                        
+
                     }
                     else if (cartBox.Items.Count >= 0)
                     {
-                       try
-                        { 
-                        CartPrices.RemoveAt(1);
-                        CartProducts.RemoveAt(1);
-                        cartBox.Items.RemoveAt(0);
+                        try
+                        {
+                            CartPrices.RemoveAt(1);
+                            CartProducts.RemoveAt(1);
+                            cartBox.Items.RemoveAt(0);
                         }
                         catch (Exception)
                         {
                             MessageBox.Show("Du har inga produkter att ta bort från varukorgen!");
                         }
-                        
+
                     }
                 }
             }
@@ -531,7 +566,7 @@ namespace TheMarket
                 TextAlignment = TextAlignment.Center
             };
             recieptPanel.Children.Add(recieptLabel);
-           
+
 
             recieptBlock = new TextBlock
             {
@@ -566,7 +601,7 @@ namespace TheMarket
                     recieptBlock.Text += "\nTotal" + "                                                " +
                     sum + "kr";
 
-                    
+
                 }
                 else
                 {
@@ -633,7 +668,6 @@ namespace TheMarket
 
             return infoPanel;
         }
-
 
     }
 }
