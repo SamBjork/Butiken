@@ -21,14 +21,12 @@ namespace TheMarket
     /// </summary>
     public partial class MainWindow : Window
     {
-
-        string[] Products;
-        string[] Discount;
-        string[] Cart;
+        string[] Discount;       
         float Bank = 2000;
         private TextBlock recieptBlock;
         private ComboBox storeBox;
         private List<Store> stores = new List<Store>();
+        private Store SelectedStore; 
 
         const string AllStoresInfo = "AllStores.csv";
 
@@ -37,6 +35,43 @@ namespace TheMarket
             public string Name;
             public string ProductFilePath;
             public string CartFilePath;
+            public string[] Products;
+            public string[] Cart;
+
+            public Store(string line)
+            {
+                string[] parts = line.Split(',');
+
+                Name = parts[0];
+                ProductFilePath = parts[1];
+                CartFilePath = parts[2];
+
+                ReadProducts();
+                ReadCart();
+            }
+
+            private void ReadProducts()
+            {
+                try
+                {
+                    Products = File.ReadAllLines(ProductFilePath);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Kunde inte läsa in:" + Name + "'s produktlista");
+                }
+            }
+                private void ReadCart()
+                {
+                    try
+                    {
+                        Cart = File.ReadAllLines(CartFilePath);
+                    }
+                    catch
+                    {
+                       //Inget fel att cart inte finns
+                    }
+                }
         }
 
         public MainWindow()
@@ -96,27 +131,14 @@ namespace TheMarket
             }
             storeBox.SelectionChanged += HandleSelectionChange;
 
-            StackPanel ButtonStack = new StackPanel
-            {
-                Margin = new Thickness(5)
-            };
-            mainGrid.Children.Add(ButtonStack);
-            Grid.SetRow(ButtonStack, 2);
-
-            Button ChooseStore = new Button
-            {
-                Content = "Gå till affär",
-                Margin = new Thickness(40)
-            };
-            ButtonStack.Children.Add(ChooseStore);
-            ChooseStore.Click += ChooseStore_Click;
-
+           
             Button QuitProg = new Button
             {
                 Content = "Avsluta program",
                 Margin = new Thickness(40)
             };
-            ButtonStack.Children.Add(QuitProg);
+            mainGrid.Children.Add(QuitProg);
+            Grid.SetRow(QuitProg, 2);
             QuitProg.Click += QuitProg_Click;
         }
         public void LoadAllStores()
@@ -126,9 +148,8 @@ namespace TheMarket
             foreach (string line in lines)
             {
                 try
-                {
-                    Store s = GetStore(line);
-                    stores.Add(s);
+                {                  
+                    stores.Add(new Store(line));
                 }
                 catch
                 {
@@ -136,25 +157,11 @@ namespace TheMarket
                 }
             }
         }
-        public static Store GetStore(string line)
-        {
-
-            string[] parts = line.Split(',');
-
-            Store s = new Store
-            {
-                Name = parts[0],
-                ProductFilePath = parts[1],
-                CartFilePath = parts[2]
-            };
-
-            return s;
-        }
+      
         void HandleSelectionChange(object sender, SelectionChangedEventArgs e)
         {
             var x = storeBox.SelectedItem;
-            Store SelectedStore = null;
-
+            
             foreach (Store s in stores)
             {
                 if (s.Name == storeBox.SelectedItem.ToString())
@@ -169,39 +176,14 @@ namespace TheMarket
             }
             else
             {
-                try
-                {
-                    Products = File.ReadAllLines(SelectedStore.ProductFilePath);
-                }
-                catch
-                {
-                    MessageBox.Show("Kunde inte läsa in:" + storeBox.SelectedItem.ToString() + "'s produktlista");
-                    return;
-                }
-                try
-                {
-                    Cart = File.ReadAllLines(SelectedStore.CartFilePath);
-                }
-                catch
-                {
-                    MessageBox.Show("Kunde inte läsa in:" + storeBox.SelectedItem.ToString() + "'s varukorg");
-                    return;
-                }
-            }
-        }
-        void ChooseStore_Click(object sender, RoutedEventArgs e)
-        {
-            int index = storeBox.SelectedIndex;
-
-
-            Start2();
-        }
+                Start2();
+            }                       
+        }       
 
         private void QuitProg_Click(object sender, RoutedEventArgs e)
         {
             Environment.Exit(0);
         }
-
 
 
         private void Start2()
@@ -261,7 +243,7 @@ namespace TheMarket
             subGrid1.Children.Add(productBox);
             Grid.SetRow(productBox, 1);
             Grid.SetColumn(productBox, 0);
-            int lineLength = this.Products.Length;
+            int lineLength = SelectedStore.Products.Length;
 
             List<string> Products = new List<string>();
             List<int> Prices = new List<int>();
@@ -484,12 +466,12 @@ namespace TheMarket
             CartProducts.Add("");
             CartPrices.Add(0);
 
-            if (File.Exists(@"C:\Windows\Temp\IkeaCart.csv")) //Store == 1 || File.Exists(@"C:\Windows\Temp\ApoteketCart.csv") && Store == 2)
+            if (File.Exists(SelectedStore.CartFilePath))
             {
 
-                for (int i = 0; i < Cart.Length; i++)
+                for (int i = 0; i < SelectedStore.Cart.Length; i++)
                 {
-                    string Pos = Cart[i];
+                    string Pos = SelectedStore.Cart[i];
                     int number = 0;
                     string information = "";
                     while (Pos[number] != '(')
@@ -513,8 +495,6 @@ namespace TheMarket
                 }
             }
 
-
-
             saveButton.Click += saveQuit;
             addButton.Click += transfer;
             removeButton.Click += remove;
@@ -524,22 +504,14 @@ namespace TheMarket
                 if (cartBox.Items.Count > 0)
                 {
 
-
                     List<string> Savings = new List<string>();
                     for (int i = 1; i < CartProducts.Count; i++)
                     {
                         Savings.Add(CartProducts[i] + "(" + CartPrices[i] + ")");
                     }
-                    // if (Store == 1)
-                    {
-                        File.WriteAllLines(@"C:\Windows\Temp\IkeaCart.csv", Savings);
-                        Environment.Exit(0);
-                    }
-                    //  else if (Store == 2)
-                    {
-                        File.WriteAllLines(@"C:\Windows\Temp\ApoteketCart.csv", Savings);
-                        Environment.Exit(0);
-                    }
+
+                    File.WriteAllLines(SelectedStore.CartFilePath, Savings);
+                    Environment.Exit(0);
                 }
                 else
                 {
