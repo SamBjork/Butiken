@@ -22,16 +22,23 @@ namespace TheMarket
     public partial class MainWindow : Window
     {
 
-
-
-
         string[] Products;
         string[] Discount;
         string[] Cart;
-        int Store = 0;
-
         float Bank = 2000;
         private TextBlock recieptBlock;
+        private ComboBox storeBox;
+        //private List<Store> stores;
+
+        const string AllStoresInfo = "AllStores.csv";
+
+        public class Store
+        {
+            public string Name;
+            public string ProductFilePath;
+            public string CartFilePath;
+        }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -40,16 +47,20 @@ namespace TheMarket
 
         private void Start1()
         {
+            LoadAllStores();
 
-            if (File.Exists(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\Rabatt.txt"))
+            const string DiscountFilePath = "Rabatt.txt";
+
+            if (File.Exists(DiscountFilePath))
             {
-                Discount = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\Rabatt.txt");
+                Discount = File.ReadAllLines(DiscountFilePath);
             }
             else
             {
-                MessageBox.Show(@"Error: Filen som innehåller rabatter finns inte");
+                MessageBox.Show("Error: Filen som innehåller rabatter finns inte");
                 Environment.Exit(0);
             }
+
 
             Title = "The Market";
             Width = 1000;
@@ -57,7 +68,6 @@ namespace TheMarket
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
 
             ScrollViewer scroll = (ScrollViewer)Content;
-
             Grid mainGrid = new Grid();
             scroll.Content = mainGrid;
             mainGrid.Margin = new Thickness(5);
@@ -77,77 +87,89 @@ namespace TheMarket
             mainGrid.Children.Add(chooseStore);
             Grid.SetRow(chooseStore, 0);
 
-            Button firstStore = new Button
+            storeBox = new ComboBox();
+            mainGrid.Children.Add(storeBox);
+            Grid.SetRow(storeBox, 1);
+            foreach (Store S in stores)
             {
-                Content = "IKEA",
+                storeBox.Items.Add(S.Name);
+            }
+            storeBox.SelectionChanged += HandleSelectionChange;
+
+            StackPanel ButtonStack = new StackPanel
+            {
                 Margin = new Thickness(5)
             };
-            mainGrid.Children.Add(firstStore);
-            Grid.SetRow(firstStore, 1);
-            firstStore.Click += FirstStore_Click;
+            mainGrid.Children.Add(ButtonStack);
+            Grid.SetRow(ButtonStack, 2);
 
-            Button secondStore = new Button
+            Button ChooseStore = new Button
             {
-                Content = "Apoteket",
-                Margin = new Thickness(5)
+                Content = "Gå till affär",
+                Margin = new Thickness(40)
             };
-            mainGrid.Children.Add(secondStore);
-            Grid.SetRow(secondStore, 2);
-            secondStore.Click += SecondStore_Click;
-        }
+            ButtonStack.Children.Add(ChooseStore);
+            ChooseStore.Click += ChooseStore_Click;
 
-        void FirstStore_Click(object sender, RoutedEventArgs e)
+            Button QuitProg = new Button
+            {
+                Content = "Avsluta program",
+                Margin = new Thickness(40)
+            };
+            ButtonStack.Children.Add(QuitProg);
+            QuitProg.Click += QuitProg_Click;
+        }
+        public static List<Store> LoadAllStores()
+        {
+            List<Store> stores = new List<Store>();
+            string[] lines = File.ReadAllLines(AllStoresInfo);
+            foreach (string line in lines)
+            {
+                try
+                {
+                    Store s = GetStore(line);
+                    stores.Add(s);
+                }
+                catch
+                {
+                    MessageBox.Show("Fel vid inläsning");
+                }
+            }
+            return stores;
+        }
+        public static Store GetStore(string line)
         {
 
-            if (File.Exists(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\IkeaVaror.txt"))
+            string[] parts = line.Split(',');
+
+            Store s = new Store
             {
-                Products = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\IkeaVaror.txt");
-                Store = 1;
-                if (File.Exists(@"C:\Windows\Temp\IkeaCart.csv"))
+                Name = parts[0],
+                ProductFilePath = parts[1],
+                CartFilePath = parts[2]
+            };
 
-                {
-                    Cart = File.ReadAllLines(@"C:\Windows\Temp\IkeaCart.csv");
-                    Start2();
-                }
-
-                else
-                {
-
-
-                    Start2();
-                }
-            }
-            else
-            {
-                MessageBox.Show(@"Error: Filen som innehåller Ikeas Produkterna finns inte(Den borde finns i C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\IkeaVaror.txt)");
-                Environment.Exit(0);
-            }
+            return s;
         }
-
-        void SecondStore_Click(object sender, RoutedEventArgs e)
+        void HandleSelectionChange(object sender, SelectionChangedEventArgs e)
         {
-            if (File.Exists(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\ApotekVaror.txt"))
-            {
-
-                Products = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\ApotekVaror.txt");
-                Store = 2;
-                if (File.Exists(@"C:\Windows\Temp\ApoteketCart.csv"))
-                {
-                    Cart = File.ReadAllLines(@"C:\Windows\Temp\ApoteketCart.csv");
-                    Start2();
-                }
-                else
-                {
-                    Start2();
-                }
-            }
-            else
-            {
-                MessageBox.Show(@"Error: Filen som innehåller Produkterna finns inte(Den borde finnas i C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\ApotekVaror.txt)");
-                Environment.Exit(0);
-            }
 
         }
+        void ChooseStore_Click(object sender, RoutedEventArgs e)
+        {
+            int index = storeBox.SelectedIndex;
+
+
+            Start2();
+        }
+
+        private void QuitProg_Click(object sender, RoutedEventArgs e)
+        {
+            Environment.Exit(0);
+        }
+
+
+
         private void Start2()
         {
 
@@ -200,7 +222,8 @@ namespace TheMarket
             Grid.SetRow(productHeading, 0);
             Grid.SetColumn(productHeading, 0);
 
-            ListBox productBox = new ListBox { Margin = new Thickness(5) };
+            ListBox productBox = new ListBox
+            { Margin = new Thickness(5) };
             subGrid1.Children.Add(productBox);
             Grid.SetRow(productBox, 1);
             Grid.SetColumn(productBox, 0);
@@ -211,7 +234,7 @@ namespace TheMarket
 
             for (int i = 0; i < lineLength; i++)
             {
-                string line = this.Products[i];
+                string line = Products[i];
 
                 int number = 0;
                 string Serienummer = "";
@@ -250,23 +273,13 @@ namespace TheMarket
 
                         productBox.Items.Add(Item + " " + Price + "kr");
 
-
                     }
                     else
                     {
                         information += PosJ;
                     }
-                    //productBox.SelectionChanged += selectproduct;
-                    //void selectproduct(object sender, RoutedEventArgs e)
-                    //{
-                    //indexleft = productBox.SelectedIndex;
-                    //product = productBox.Items[indexleft].ToString();
-                    //}
                 }
-
             }
-
-
 
             TextBox discountBox = new TextBox
             {
@@ -437,7 +450,7 @@ namespace TheMarket
             CartProducts.Add("");
             CartPrices.Add(0);
 
-            if (File.Exists(@"C:\Windows\Temp\IkeaCart.csv") && Store == 1 || File.Exists(@"C:\Windows\Temp\ApoteketCart.csv") && Store == 2)
+            if (File.Exists(@"C:\Windows\Temp\IkeaCart.csv")) //Store == 1 || File.Exists(@"C:\Windows\Temp\ApoteketCart.csv") && Store == 2)
             {
 
                 for (int i = 0; i < Cart.Length; i++)
@@ -483,14 +496,14 @@ namespace TheMarket
                     {
                         Savings.Add(CartProducts[i] + "(" + CartPrices[i] + ")");
                     }
-                    if (Store == 1)
+                    // if (Store == 1)
                     {
                         File.WriteAllLines(@"C:\Windows\Temp\IkeaCart.csv", Savings);
                         Environment.Exit(0);
                     }
-                    else if (Store == 2)
+                    //  else if (Store == 2)
                     {
-                        File.WriteAllLines(@"C:\Windows\Temp\ApotekCart.csv", Savings);
+                        File.WriteAllLines(@"C:\Windows\Temp\ApoteketCart.csv", Savings);
                         Environment.Exit(0);
                     }
                 }
@@ -548,7 +561,6 @@ namespace TheMarket
                         {
                             MessageBox.Show("Du har inga produkter att ta bort från varukorgen!");
                         }
-
                     }
                 }
             }
