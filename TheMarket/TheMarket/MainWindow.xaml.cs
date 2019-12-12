@@ -28,7 +28,7 @@ namespace TheMarket
         float Bank = 2000;
         private TextBlock recieptBlock;
         private ComboBox storeBox;
-        //private List<Store> stores;
+        private List<Store> stores = new List<Store>();
 
         const string AllStoresInfo = "AllStores.csv";
 
@@ -119,9 +119,9 @@ namespace TheMarket
             ButtonStack.Children.Add(QuitProg);
             QuitProg.Click += QuitProg_Click;
         }
-        public static List<Store> LoadAllStores()
+        public void LoadAllStores()
         {
-            List<Store> stores = new List<Store>();
+            stores.Clear();
             string[] lines = File.ReadAllLines(AllStoresInfo);
             foreach (string line in lines)
             {
@@ -135,7 +135,6 @@ namespace TheMarket
                     MessageBox.Show("Fel vid inläsning");
                 }
             }
-            return stores;
         }
         public static Store GetStore(string line)
         {
@@ -153,7 +152,42 @@ namespace TheMarket
         }
         void HandleSelectionChange(object sender, SelectionChangedEventArgs e)
         {
+            var x = storeBox.SelectedItem;
+            Store SelectedStore = null;
 
+            foreach (Store s in stores)
+            {
+                if (s.Name == storeBox.SelectedItem.ToString())
+                {
+                    SelectedStore = s;
+                    break;
+                }
+            }
+            if (SelectedStore == null)
+            {
+                MessageBox.Show("Butik:" + storeBox.SelectedItem.ToString() + "finns inte");
+            }
+            else
+            {
+                try
+                {
+                    Products = File.ReadAllLines(SelectedStore.ProductFilePath);
+                }
+                catch
+                {
+                    MessageBox.Show("Kunde inte läsa in:" + storeBox.SelectedItem.ToString() + "'s produktlista");
+                    return;
+                }
+                try
+                {
+                    Cart = File.ReadAllLines(SelectedStore.CartFilePath);
+                }
+                catch
+                {
+                    MessageBox.Show("Kunde inte läsa in:" + storeBox.SelectedItem.ToString() + "'s varukorg");
+                    return;
+                }
+            }
         }
         void ChooseStore_Click(object sender, RoutedEventArgs e)
         {
