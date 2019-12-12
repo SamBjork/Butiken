@@ -224,16 +224,16 @@ namespace TheMarket
                     for (int l = 0; l < 2; l++)
                     {
                         string line = this.Products[i];
-                        string Serienummer = "";
+                        
 
                         while (line[number] != '|')
                         {
-                            Serienummer += line[number];
-                            MessageBox.Show(information);
+                            information += line[number];
+                            
                             number++;
                         }
                         number++;
-                        MessageBox.Show(information);
+                        
 
                         int Price = 0;
 
@@ -244,9 +244,6 @@ namespace TheMarket
                         }
                         else
                         {
-
-                            MessageBox.Show(information);
-
                             Price = Convert.ToInt32(information);
 
 
