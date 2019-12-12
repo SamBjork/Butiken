@@ -1,4 +1,4 @@
-﻿177661: Glas - Rymmer ca 50cl (39kr)
-177662: Talrik - Porslin talrik med en diameter på 20cm (49kr)
-177663: Tekopp - Porslinkopp med naturmönster (49kr) 
-177664: Sked - Perfekta skeden för tekoppen med ett blommönster (29kr)
+﻿Glas|39|
+Talrik|79|
+Tekopp|49|
+Sked|29|
