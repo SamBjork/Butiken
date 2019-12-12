@@ -22,9 +22,6 @@ namespace TheMarket
     public partial class MainWindow : Window
     {
 
-
-
-
         string[] Products;
         string[] Discount;
         string[] Cart;
@@ -40,16 +37,18 @@ namespace TheMarket
 
         private void Start1()
         {
+            const string DiscountFilePath = "Rabatt.txt";
 
-            if (File.Exists(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\Rabatt.txt"))
+            if (File.Exists(DiscountFilePath))
             {
-                Discount = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\Rabatt.txt");
+                Discount = File.ReadAllLines(DiscountFilePath);
             }
             else
             {
-                MessageBox.Show(@"Error: Filen som innehåller rabatter finns inte");
+                MessageBox.Show("Error: Filen som innehåller rabatter finns inte");
                 Environment.Exit(0);
             }
+
 
             Title = "The Market";
             Width = 1000;
@@ -57,7 +56,6 @@ namespace TheMarket
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
 
             ScrollViewer scroll = (ScrollViewer)Content;
-
             Grid mainGrid = new Grid();
             scroll.Content = mainGrid;
             mainGrid.Margin = new Thickness(5);
@@ -80,7 +78,7 @@ namespace TheMarket
             Button firstStore = new Button
             {
                 Content = "IKEA",
-                Margin = new Thickness(5)
+                Margin = new Thickness(40)
             };
             mainGrid.Children.Add(firstStore);
             Grid.SetRow(firstStore, 1);
@@ -89,7 +87,7 @@ namespace TheMarket
             Button secondStore = new Button
             {
                 Content = "Apoteket",
-                Margin = new Thickness(5)
+                Margin = new Thickness(40)
             };
             mainGrid.Children.Add(secondStore);
             Grid.SetRow(secondStore, 2);
@@ -98,10 +96,11 @@ namespace TheMarket
 
         void FirstStore_Click(object sender, RoutedEventArgs e)
         {
+            const string IkeaFilePath = "IkeaVaror.txt";
 
-            if (File.Exists(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\IkeaVaror.txt"))
+            if (File.Exists(IkeaFilePath))
             {
-                Products = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\IkeaVaror.txt");
+                Products = File.ReadAllLines(IkeaFilePath);
                 Store = 1;
                 if (File.Exists(@"C:\Windows\Temp\IkeaCart.csv"))
 
@@ -112,8 +111,6 @@ namespace TheMarket
 
                 else
                 {
-
-
                     Start2();
                 }
             }
@@ -126,10 +123,12 @@ namespace TheMarket
 
         void SecondStore_Click(object sender, RoutedEventArgs e)
         {
-            if (File.Exists(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\ApotekVaror.txt"))
+            const string FarmacyFilePath = "ApotekVaror.txt";
+
+            if (File.Exists(FarmacyFilePath))
             {
 
-                Products = File.ReadAllLines(@"C:\Users\Sam\source\repos\Butiken\TheMarket\TheMarket\ApotekVaror.txt");
+                Products = File.ReadAllLines(FarmacyFilePath);
                 Store = 2;
                 if (File.Exists(@"C:\Windows\Temp\ApoteketCart.csv"))
                 {
@@ -204,69 +203,63 @@ namespace TheMarket
             subGrid1.Children.Add(productBox);
             Grid.SetRow(productBox, 1);
             Grid.SetColumn(productBox, 0);
-            int lineLength = this.Products.Length;
 
+
+
+            int lineLength = this.Products.Length;
             List<string> Products = new List<string>();
             List<int> Prices = new List<int>();
 
-            for (int i = 0; i < lineLength; i++)
+            GetShop();
+
+            void GetShop()
             {
-                string line = this.Products[i];
-
-                int number = 0;
-                string Serienummer = "";
-
-                while (line[number] != ':')
+                for (int i = 0; i < lineLength; i++)
                 {
-                    Serienummer += line[number];
-                    number++;
+                    bool ItemSelect = true;
+                    int number = 0;
+                    string information = "";
+                    string Item = "";
+
+                    for (int l = 0; l < 2; l++)
+                    {
+                        string line = this.Products[i];
+                        string Serienummer = "";
+
+                        while (line[number] != '|')
+                        {
+                            Serienummer += line[number];
+                            MessageBox.Show(information);
+                            number++;
+                        }
+                        number++;
+                        MessageBox.Show(information);
+
+                        int Price = 0;
+
+                        if (ItemSelect)
+                        {
+                            Item = information;
+                            information = "";
+                        }
+                        else
+                        {
+
+                            MessageBox.Show(information);
+
+                            Price = Convert.ToInt32(information);
+
+
+                            Products.Add(Item);
+                            Prices.Add(Price);
+
+                            productBox.Items.Add(Item + " " + Price + "kr");
+                        }
+                        ItemSelect = false;
+                    }
+
                 }
-
-                string information = "";
-                string Item = "";
-                int Price = 0;
-                bool DetectingPrice = false;
-
-                for (int j = number + 2; j < line.Length; j++)
-                {
-                    char PosJ = line[j];
-                    if (PosJ == '-')
-                    {
-                        information = information.Substring(0, j - (number + 3));
-                        Item = information;
-                        information = "";
-                    }
-                    else if (PosJ == '(')
-                    {
-                        information = "";
-                        DetectingPrice = true;
-                    }
-                    else if (PosJ == 'k' && DetectingPrice == true)
-                    {
-                        Price = Convert.ToInt32(information);
-
-                        Products.Add(Item);
-                        Prices.Add(Price);
-
-                        productBox.Items.Add(Item + " " + Price + "kr");
-
-
-                    }
-                    else
-                    {
-                        information += PosJ;
-                    }
-                    //productBox.SelectionChanged += selectproduct;
-                    //void selectproduct(object sender, RoutedEventArgs e)
-                    //{
-                    //indexleft = productBox.SelectedIndex;
-                    //product = productBox.Items[indexleft].ToString();
-                    //}
-                }
-
             }
-
-
 
             TextBox discountBox = new TextBox
             {
@@ -287,57 +280,12 @@ namespace TheMarket
             Grid.SetRow(applyCodeButton, 3);
 
             float DiscountAmount = 1;
-            applyCodeButton.Click += codevalidator;
-
-            void codevalidator(object sender, RoutedEventArgs e)
-            {
-                for (int i = 0; i < Discount.Length; i++)
-                {
-                    string line = Discount[i];
+            string DiscountProcentage = "0";
 
 
-                    int number = 0;
-                    string Rabattkod = "";
-
-                    while (line[number] != '(')
-                    {
-                        Rabattkod += line[number];
-                        number++;
-                    }
-
-                    if (i == Discount.Length && DiscountAmount == 1)
-                    {
-                        MessageBox.Show("Du angav en felaktig kod");
-                    }
-                    else if (Rabattkod == discountBox.Text)
-                    {
-                        string information = "";
-
-                        number++;
-                        for (int j = number; j < line.Length; j++)
-                        {
-                            char PosJ = line[j];
-                            if (PosJ == '%')
-                            {
-                                information = information.Substring(0, j - (number));
-
-
-                                DiscountAmount = Convert.ToInt64(information);
-                                DiscountAmount = (100 - DiscountAmount) / 100;
-                                MessageBox.Show("du använde koden: " + discountBox.Text + " för " + information + "% avdrag från ditt köp");
-                            }
-                            else
-                            {
-                                information += PosJ;
-                            }
-                        }
-
-                    }
-                }
-            }
             TextBlock totalPrice = new TextBlock
             {
-                Text = "Dina pengar: " + Bank,
+                Text = "Konto: " + Bank + "kr",
                 Margin = new Thickness(5),
                 FontSize = 17,
                 TextAlignment = TextAlignment.Center
@@ -471,6 +419,55 @@ namespace TheMarket
             saveButton.Click += saveQuit;
             addButton.Click += transfer;
             removeButton.Click += remove;
+            applyCodeButton.Click += codevalidator;
+
+            void codevalidator(object sender, RoutedEventArgs e)
+            {
+                for (int i = 0; i < Discount.Length; i++)
+                {
+                    string line = Discount[i];
+
+
+                    int number = 0;
+                    string Rabattkod = "";
+
+                    while (line[number] != '(')
+                    {
+                        Rabattkod += line[number];
+                        number++;
+                    }
+
+                    if (i == Discount.Length && DiscountAmount == 1)
+                    {
+                        MessageBox.Show("Du angav en felaktig kod");
+                    }
+                    else if (Rabattkod == discountBox.Text)
+                    {
+                        string information = "";
+
+                        number++;
+                        for (int j = number; j < line.Length; j++)
+                        {
+                            char PosJ = line[j];
+                            if (PosJ == '%')
+                            {
+                                information = information.Substring(0, j - (number));
+                                DiscountProcentage = information;
+
+                                DiscountAmount = Convert.ToInt64(information);
+                                DiscountAmount = (100 - DiscountAmount) / 100;
+                                MessageBox.Show("du använde koden: " + discountBox.Text + " för " + information + "% avdrag från ditt köp");
+                            }
+                            else
+                            {
+                                information += PosJ;
+                            }
+                        }
+
+                    }
+                }
+                Bill();
+            }
 
             void saveQuit(object sender, RoutedEventArgs e)
             {
@@ -490,7 +487,7 @@ namespace TheMarket
                     }
                     else if (Store == 2)
                     {
-                        File.WriteAllLines(@"C:\Windows\Temp\ApotekCart.csv", Savings);
+                        File.WriteAllLines(@"C:\Windows\Temp\ApoteketCart.csv", Savings);
                         Environment.Exit(0);
                     }
                 }
@@ -514,7 +511,7 @@ namespace TheMarket
                 {
                     MessageBox.Show("Du måste välja en produkt att lägga till i varukorgen");
                 }
-
+                Bill();
             }
             void remove(object sender, RoutedEventArgs e)
             {
@@ -534,7 +531,7 @@ namespace TheMarket
                         {
                             MessageBox.Show("Du har inga produkter att ta bort från varukorgen!");
                         }
-
+                        Bill();
                     }
                     else if (cartBox.Items.Count >= 0)
                     {
@@ -548,8 +545,8 @@ namespace TheMarket
                         {
                             MessageBox.Show("Du har inga produkter att ta bort från varukorgen!");
                         }
-
                     }
+                    Bill();
                 }
             }
 
@@ -577,36 +574,47 @@ namespace TheMarket
             recieptPanel.Children.Add(recieptBlock);
 
             float sum = 0;
+            float TempBank = 0;
             payButton.Click += Pay;
 
             void Pay(object sender, RoutedEventArgs e)
             {
 
-                sum = CartPrices.Sum();
-                sum *= DiscountAmount;
                 if (Bank >= sum && CartProducts.Count > 0)
                 {
-                    Bank = Bank - sum;
-
-                    totalPrice.Text = "Dina pengar: " + Bank + " kr";
-                    recieptBlock.Text = "";
-                    for (int i = 1; i < CartProducts.Count; i++)
-                    {
-
-                        recieptBlock.Text += "\n" + CartProducts[i] + "                                                " +
-                        " " + CartPrices[i];
-
-                    }
-                    recieptBlock.Text += "\n-------------------------------------------";
-                    recieptBlock.Text += "\nTotal" + "                                                " +
-                    sum + "kr";
-
-
+                    Bank = TempBank;
+                    totalPrice.Text = "Konto: " + Bank + "kr";
+                    Bill();
                 }
                 else
                 {
                     MessageBox.Show("Du har inte nog med pengar");
                 }
+
+            }
+
+
+            void Bill()
+            {
+                sum = CartPrices.Sum();
+                sum *= DiscountAmount;
+                TempBank = Bank - sum;
+
+                recieptBlock.Text = "";
+                for (int i = 1; i < CartProducts.Count; i++)
+                {
+
+                    recieptBlock.Text += "\n" + CartProducts[i] + "                                                " +
+                    " " + CartPrices[i];
+
+                }
+                recieptBlock.Text += "\n-------------------------------------------";
+                recieptBlock.Text += "\nRabattkod " + discountBox.Text + " " + DiscountProcentage + "%";
+                recieptBlock.Text += "\nTotal" + "                                                " +
+                sum + "kr";
+                recieptBlock.Text += "\nKonto efter" + "                           " +
+                "          " + TempBank + "kr";
+
 
             }
 
@@ -667,6 +675,7 @@ namespace TheMarket
 
 
             return infoPanel;
+
         }
 
     }
